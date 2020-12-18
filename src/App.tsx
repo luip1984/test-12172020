@@ -1,26 +1,19 @@
 import React from 'react';
-import logo from './logo.svg';
+import JobPipeline from './JobPipeline';
+import { Job } from './Job';
 import './App.css';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    //onComplete={ (jobId: string) => updatePipeline(jobId)}
+    return (
+        <JobPipeline>
+            <Job jobId='123' timeToComplete={3}/>
+            <Job jobId='234' timeToComplete={2}/>
+            <Job jobId='345' timeToComplete={1}/>
+            <Job jobId='456' timeToComplete={2}/>
+            <Job jobId='567' timeToComplete={5}/>
+        </JobPipeline>
+    );
 }
 
 export default App;

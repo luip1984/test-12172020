@@ -1,0 +1,108 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.13.1/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.13.1/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  </head>
+  <body>
+    <h1>React Job Queue Exercise</h1>
+    <p>These Job components are currently all running at the same time, instead of sequentially. Fix the <code>JobPipeline</code> component to accommodate this task.</p>
+    <div id='root'></div>
+    <script type="text/jsx">
+      const CountdownService = {
+        async tick(seconds, onTick) {
+          if (seconds <= 0) {
+            return;
+          }
+
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              const timeRemaining = seconds - 1;
+              onTick(timeRemaining);
+
+              resolve(this.tick(timeRemaining, onTick));
+            }, 1000);
+          });
+        },
+      };
+
+      const Job = (props) => {
+        // const [holdStatus, setHoldStatus] = React.useState('true');
+        // const [completeStatus, setCompleteStatus] = React.useState('false');
+        // setHoldStatus(status) {}
+        
+        const [timeRemaining, setTimeRemaining] = React.useState(
+          props.timeToComplete,
+        );
+
+        React.useEffect(() => {
+          (async () => {
+            await CountdownService.tick(timeRemaining, setTimeRemaining);
+            onComplete();
+          })();
+        }, []);
+
+        const onComplete = () => {
+          const { jobId, onComplete } = props;
+
+          if (onComplete) {
+            onComplete(jobId);
+          }
+        };
+
+        return (
+          <div>
+            Job ID {props.jobId}:{' '}
+            {timeRemaining <= 0 ? 'Done!' : `${timeRemaining}s...`}
+          </div>
+        );
+      };
+
+      /**
+       * This component needs some TLC! Refactor it so that its children don't
+       * mount (and thus, start processing) until each previous child in the list
+       * has signaled that it's completed. In other words, Job ID 123 should start
+       * and count down to done, then Job ID 234 should start and count down to done,
+       * then Job 345, etc.
+       * This is going to involve combining a few different aspects of React
+       * development, including React.Children.map or React.Children.toArray,
+       * React.cloneElement, and some way of tracking how many items have finished
+       * processing, so that you know which components to mount and activate.
+       **/
+      // https://reactjs.org/docs/react-api.html
+
+      const JobPipeline = (props) => {
+        // const [nextJob, setNextJob] = React.useState(
+        //   props.runJob,
+        // );
+        const [jobIndex, setNextJob] = React.useState(0);
+        const jobs = ['123', '234', '345', '456', '567'];
+        
+        const setJob = (jobIndex) => {
+          setNextJob(jobIndex);
+        }
+        
+        return props.children.map((child, index) => {
+          return React.cloneElement(child, { onComplete: setNextJob });
+        }).slice(0, jobIndex);
+        
+      };
+
+
+
+      const Exercise = () => (
+        <JobPipeline>
+          <Job jobId='123' timeToComplete={3} />
+          <Job jobId='234' timeToComplete={2} />
+          <Job jobId='345' timeToComplete={1} />
+          <Job jobId='456' timeToComplete={2} />
+          <Job jobId='567' timeToComplete={5} />
+        </JobPipeline>
+      );
+
+      ReactDOM.render(<Exercise />, document.getElementById('root'));     
+    </script>
+  </body>
+</html>
